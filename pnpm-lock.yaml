@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@fabianlars/tauri-plugin-oauth':
+        specifier: '2'
+        version: 2.0.0
       '@tauri-apps/api':
         specifier: ^2
         version: 2.2.0
@@ -204,6 +207,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fabianlars/tauri-plugin-oauth@2.0.0':
+    resolution: {integrity: sha512-I1s08ZXrsFuYfNWusAcpLyiCfr5TCvaBrRuKfTG+XQrcaqnAcwjdWH0U5J9QWuMDLwCUMnVxdobtMJzPR8raxQ==}
 
   '@jridgewell/gen-mapping@0.3.8':
     resolution: {integrity: sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA==}
@@ -731,6 +737,10 @@ snapshots:
 
   '@esbuild/win32-x64@0.24.2':
     optional: true
+
+  '@fabianlars/tauri-plugin-oauth@2.0.0':
+    dependencies:
+      '@tauri-apps/api': 2.2.0
 
   '@jridgewell/gen-mapping@0.3.8':
     dependencies:

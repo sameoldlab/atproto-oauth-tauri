@@ -13,6 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@fabianlars/tauri-plugin-oauth": "2",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-fs": "~2",
     "@tauri-apps/plugin-notification": "~2",
