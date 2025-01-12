@@ -6,7 +6,6 @@
     start,
   } from "@fabianlars/tauri-plugin-oauth";
   import { invoke } from "@tauri-apps/api/core";
-  import { listen } from "@tauri-apps/api/event";
   import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
   let name = $state("");
@@ -16,8 +15,10 @@
   let currentPort: number | null = $state(null);
   let isRustServer = false;
 
-  // const webview = getCurrentWebviewWindow();
-  listen("redirect_uri", (e) => console.log(`received redirect event`, e));
+  const webview = getCurrentWebviewWindow();
+  webview.listen("redirect_uri", (e) =>
+    console.log(`received redirect event`, e),
+  );
   async function stopAuthServer() {
     if (currentPort !== null) {
       try {

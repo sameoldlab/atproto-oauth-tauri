@@ -1,4 +1,4 @@
-use tauri::{command, AppHandle, Emitter, Window};
+use tauri::{command, Emitter, Window};
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[command]
 fn greet(name: &str) -> String {
@@ -6,10 +6,10 @@ fn greet(name: &str) -> String {
 }
 
 #[command]
-fn start_server(app: AppHandle) -> Result<u16, String> {
+fn start_server(window: Window) -> Result<u16, String> {
     tauri_plugin_oauth::start( move |url| {
         println!("url: {}", url);
-        let _ = app.emit("redirect_uri", url).unwrap();
+        let _ = window.emit("redirect_uri", url);
     })
     .map_err(|err| err.to_string())
 }
