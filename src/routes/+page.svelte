@@ -72,6 +72,21 @@
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     greetMsg = await invoke("greet", { name });
   }
+  let authServer = $state("bsky.social");
+  async function authenticate(event: Event) {
+    event.preventDefault();
+    message = await invoke("authenticate", {
+      authServer: `https://${authServer}`,
+    });
+    // .then(console.log).catch(console.error);
+  }
+  const get = async (pds = authServer) => {
+    console.log("fetching from ", pds);
+    const request = await fetch(
+      `https://${pds}/.well-known/oauth-authorization-server`,
+    );
+    console.log(await request.json());
+  };
 </script>
 
 <main class="container">
@@ -95,9 +110,15 @@
     <button type="submit">Greet</button>
   </form>
   <p>{greetMsg}</p>
+  <button onclick={() => get()}>PDS</button>
   <p><strong>{message}</strong></p>
-  <button onclick={startAuthServer}>Start Flow</button>
-  <button onclick={startServerTS}>Start Flow TS</button>
+
+  <form onsubmit={authenticate} class="row">
+    <select name="server" id="" bind:value={authServer}>
+      <option value="bsky.social">bsky.social</option>
+    </select>
+    <button type="submit">Sign In with Atproto</button>
+  </form>
   <br />
   {#if currentPort}
     <button onclick={() => stopAuthServer()}>Stop Server</button>
@@ -105,6 +126,9 @@
 </main>
 
 <style>
+  :root {
+    color-scheme: dark;
+  }
   .logo.vite:hover {
     filter: drop-shadow(0 0 2em #747bff);
   }
