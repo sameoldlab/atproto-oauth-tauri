@@ -1,86 +1,42 @@
 <script lang="ts">
-  import {
-    cancel,
-    onInvalidUrl,
-    onUrl,
-    start,
-  } from "@fabianlars/tauri-plugin-oauth";
   import { invoke } from "@tauri-apps/api/core";
-  import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
   let name = $state("");
-  let greetMsg = $state("");
+  let did = $state("");
   let message = $state("");
+  let server_options: string[] = $state([]);
+  let auth_server = $state();
 
-  let currentPort: number | null = $state(null);
-  let isRustServer = false;
-
-  const webview = getCurrentWebviewWindow();
-  webview.listen("redirect_uri", (e) =>
-    console.log(`received redirect event`, e),
-  );
-  async function stopAuthServer() {
-    if (currentPort !== null) {
-      try {
-        if (isRustServer) await invoke("stop_server", { port: currentPort });
-        else await cancel(currentPort);
-        console.log(`Stopped server on port ${currentPort}`);
-      } catch (error) {
-        console.error(`Error stopping server: ${error}`);
-      }
-      currentPort = null;
-    }
-  }
-
-  async function startAuthServer() {
-    await stopAuthServer();
-    try {
-      const port = await invoke<number>("start_server");
-      currentPort = port;
-      message = `OAuth server started on port ${port} (Rust)`;
-    } catch (error) {
-      message = `Error starting OAuth server (Rust): ${error}`;
-    }
-  }
-
-  async function startServerTS() {
-    await stopAuthServer();
-    try {
-      const port = await start();
-      currentPort = port;
-      isRustServer = false;
-      message = `OAuth server started on port ${port} (TypeScript)`;
-
-      const unlistenUrl = await onUrl((url) => {
-        console.log("Received OAuth URL:", url);
-        message += `\nReceived OAuth URL: ${url}`;
-      });
-
-      const unlistenInvalidUrl = await onInvalidUrl((error) => {
-        console.error("Received invalid OAuth URL:", error);
-        message += `\nReceived invalid OAuth URL: ${error}`;
-      });
-
-      // Store unlisten functions to call them when stopping the server
-      (window as any).unlistenFunctions = [unlistenUrl, unlistenInvalidUrl];
-    } catch (error) {
-      message = `Error starting OAuth server (TypeScript): ${error}`;
-    }
-  }
-  async function greet(event: Event) {
+  async function resolve(event: Event) {
     event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
+    try {
+      did = await invoke("resolve_did", { handle: name });
+      console.log(did);
+      const servers = await invoke<{ auth_server: string; pds_server: string }>(
+        "get_servers",
+        { did },
+      );
+      if (!server_options.includes(servers.auth_server)) {
+        server_options.push(servers.auth_server);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   }
-  let authServer = $state("bsky.social");
+
   async function authenticate(event: Event) {
     event.preventDefault();
-    message = await invoke("authenticate", {
-      authServer: `https://${authServer}`,
-    });
+    try {
+      message = await invoke("authenticate", {
+        authServer: auth_server,
+      });
+    } catch (err) {
+      console.error(err);
+    }
     // .then(console.log).catch(console.error);
   }
-  const get = async (pds = authServer) => {
+
+  const get = async (pds = auth_server) => {
     console.log("fetching from ", pds);
     const request = await fetch(
       `https://${pds}/.well-known/oauth-authorization-server`,
@@ -105,24 +61,28 @@
   </div>
   <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
 
-  <form class="row" onsubmit={greet}>
-    <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
-    <button type="submit">Greet</button>
+  <form class="row" onsubmit={resolve}>
+    <input
+      id="greet-input"
+      required
+      placeholder="Enter a name..."
+      bind:value={name}
+    />
+    <button type="submit">Resolve Did</button>
   </form>
-  <p>{greetMsg}</p>
-  <button onclick={() => get()}>PDS</button>
+  <p>{auth_server}</p>
+  <button onclick={() => get()}>Resolve DID</button>
   <p><strong>{message}</strong></p>
 
   <form onsubmit={authenticate} class="row">
-    <select name="server" id="" bind:value={authServer}>
-      <option value="bsky.social">bsky.social</option>
+    <select name="server" id="" bind:value={auth_server}>
+      {#each server_options as server}
+        <option value={server}>{server.substr(8)}</option>
+      {/each}
     </select>
     <button type="submit">Sign In with Atproto</button>
   </form>
   <br />
-  {#if currentPort}
-    <button onclick={() => stopAuthServer()}>Stop Server</button>
-  {/if}
 </main>
 
 <style>
