@@ -57,6 +57,16 @@ impl serde::Serialize for Error {
         serializer.serialize_str(self.to_string().as_ref())
     }
 }
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Self {
+        Error::JsonError {
+            message: error.to_string(),
+            classify: error.classify(),
+            column: error.column(),
+            line: error.line(),
+        }
+    }
+}
 
 #[command]
 fn resolve_did(handle: &str) -> Result<String, Error> {
