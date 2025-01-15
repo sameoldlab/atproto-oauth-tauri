@@ -7,11 +7,8 @@
   ],
   "permissions": [
     "core:default",
-    "opener:default",
-    "fs:default",
-    "notification:default",
-    "sql:default",
     "oauth:allow-start",
-    "oauth:allow-cancel"
+    "oauth:allow-cancel",
+    "deep-link:default"
   ]
 }

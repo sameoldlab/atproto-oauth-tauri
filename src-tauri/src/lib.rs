@@ -6,19 +6,25 @@ use reqwest::{
     Url,
 };
 use serde::{Deserialize, Serialize};
-use std::{borrow::Cow, collections::BTreeMap, str::FromStr};
-use tauri::{command, Window};
+use std::{
+    borrow::Cow,
+    collections::{BTreeMap, HashMap},
+};
 use tauri_plugin_oauth::OauthConfig;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_sql::Builder::new().build())
-        .plugin(tauri_plugin_notification::init())
+        // .plugin(tauri_plugin_sql::Builder::new().build())
+        // .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_oauth::init())
-        .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![resolve_did, authenticate, get_servers])
+        // .plugin(tauri_plugin_fs::init())
+        // .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![
+            resolve_did,
+            authenticate,
+            get_servers
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
