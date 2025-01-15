@@ -181,12 +181,14 @@ struct PushedAuthorizationRequest {
     // login_hint: String,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct ParResponse {
+    pub expires_in: u32,
+    pub request_uri: String,
+}
+
 #[command]
-fn authenticate(window: Window, pds_url: &str) {
-    let (code_challenge, code_verify) = PkceCodeChallenge::new_random_sha256();
-    let client_id = "https://localhost";
-    let client = Client::new();
-    let state: String = rand::thread_rng().sample_iter(&Alphanumeric).take(30).map(char::from).collect();
+fn authenticate(auth_url: &str) -> Result<(), Error> {
     let port = tauri_plugin_oauth::start_with_config(
         OauthConfig {
             ports: None,
@@ -195,34 +197,59 @@ fn authenticate(window: Window, pds_url: &str) {
             ))),
         },
         move |url| {
-            let _url = Url::parse(&url).unwrap();
+            let url = Url::parse(&url).unwrap();
+            let query_pairs: HashMap<String, String> = url.query_pairs().into_owned().collect();
+            println!("{:?}", url);
         },
     )
     .unwrap();
-    let request_body = PushedAuthorizationRequest {
-        client_id: "http://localhost".to_string(),
-        state,
-        code_challenge: code_challenge.as_str().to_string(),
-        code_challenge_method: "S256".to_string(),
-        scope: "atproto".to_string(),
-        redirect_uri: "http://[::1]/".to_string(),
-        response_type: "code".to_string(),
-    };
+
+    let auth_server = Url::parse(auth_url).unwrap();
+    let client_id = String::from("http://localhost");
+    let (code_challenge, code_verify) = PkceCodeChallenge::new_random_sha256();
+    let client = Client::new();
+    let state: String = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(30)
+        .map(char::from)
+        .collect();
+    let redirect_uri = format!("http://127.0.0.1:{port}");
+    let request_body = serde_json::json!({
+        "client_id": format!("{client_id}"),
+        "state": state,
+        "code_challenge": code_challenge.as_str(),
+        "redirect_uri": redirect_uri,
+        "code_challenge_method": code_challenge.method(),
+        "scope": "atproto",
+        "response_type": "code",
+        "application_type": "native",
+        "dpop_bound_access_tokens": true,
+        "grant_types": ["authorization_code", "refresh_token"],
+    });
     println!("{:#?}", request_body);
 
-    let body = client
-        .post(format!("{}/oauth/par", pds_url))
+    let par_endpoint = auth_server.join("/oauth/par").unwrap();
+    let par_response = client
+        .post(par_endpoint)
         .json(&request_body)
         .send()
-        .unwrap();
-    println!("{:#?}", body);
+        .unwrap()
+        .json::<ParResponse>()
+        .map_err(Error::from)?;
 
-    // let tokens: serde_json::Value = body.json().unwrap();
-    // println!("{:#?}", tokens);
+    let request_uri = par_response.request_uri;
 
-    // let redirect_url = format!("http://localhost:{}/callback", port);
-    println!("server started at {}", port);
-    let auth_url = format!("{}oauth/authorize?client_id={}", pds_url, client_id,);
+    let mut auth_endpoint = auth_server.join("oauth/authorize").unwrap();
+    auth_endpoint
+        .query_pairs_mut()
+        .append_pair("client_id", &client_id)
+        .append_pair("redirect_uri", &redirect_uri)
+        .append_pair("scope", &"atproto")
+        .append_pair("request_uri", &request_uri);
+    println!("{:?}", auth_endpoint.as_str());
+    open::that(auth_endpoint.as_str()).unwrap();
+    Ok(())
+}
 
-    // open::that(auth_url).unwrap();
+
 }

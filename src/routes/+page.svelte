@@ -28,10 +28,11 @@
     event.preventDefault();
     try {
       message = await invoke("authenticate", {
-        authServer: auth_server,
+        authUrl: auth_server,
       });
     } catch (err) {
       console.error(err);
+      message = err;
     }
     // .then(console.log).catch(console.error);
   }
