@@ -1,2 +1,2 @@
-export const prerender = true;
-export const ssr = false;
+export const prerender = import.meta.env.MODE === 'native';
+export const ssr = import.meta.env.MODE === 'native';
