@@ -10,16 +10,24 @@ use std::{
     borrow::Cow,
     collections::{BTreeMap, HashMap},
 };
+use tauri::command;
+use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_oauth::OauthConfig;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_deep_link::init())
         // .plugin(tauri_plugin_sql::Builder::new().build())
         // .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_oauth::init())
         // .plugin(tauri_plugin_fs::init())
         // .plugin(tauri_plugin_opener::init())
+        .setup(|app| {
+            #[cfg(desktop)]
+            app.deep_link().register("tirekick")?;
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             resolve_did,
             authenticate,
