@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "identifier": "tauri2-tirekick",
   "build": {
-    "beforeDevCommand": "pnpm dev",
+    "beforeDevCommand": "pnpm vite dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "pnpm build",
+    "beforeBuildCommand": "pnpm vite build",
     "frontendDist": "../build"
   },
   "app": {
