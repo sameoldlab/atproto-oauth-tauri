@@ -4,6 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "start": "node build",
     "dev": "tauri dev",
     "dev:n": "vite dev --mode native",
     "dev:w": "vite dev --mode web",
@@ -25,8 +26,9 @@
     "@tauri-apps/plugin-sql": "~2"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.0",
+    "@sveltejs/adapter-node": "^5.2.11",
     "@sveltejs/adapter-static": "^3.0.6",
-    "@sveltejs/adapter-node": "^5.2.9",
     "@sveltejs/kit": "^2.9.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tauri-apps/cli": "^2",
