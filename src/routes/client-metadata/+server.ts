@@ -10,7 +10,7 @@ export function GET() {
       "authorization_code",
       "refresh_token"
     ],
-    scope: "atproto",
+    scope: "atproto transition:generic",
     response_types: [
       "code"
     ],
@@ -18,8 +18,14 @@ export function GET() {
       "supply.same.tirekick:/callback/atproto",
       `${client_uri}/callback/atproto`
     ],
+    // token_endpoint_auth_method? private_key_jwt,
+    // token_endpoint_auth_signing_alg? 'ES256',
     dpop_bound_access_tokens: true,
+    // (jwks: Jwks[] ) || (jwks_uri: url string)
+    client_name: "Tire Kick",
     client_uri: `${client_uri}`,
-    client_name: "Tire Kick"
+    logo_uri: `${client_uri}/favicon.png`,
+    // tos_uri: url string,
+    // policy_uri: url string
   })
 }

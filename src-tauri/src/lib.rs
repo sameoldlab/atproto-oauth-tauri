@@ -216,6 +216,7 @@ fn authenticate(auth_url: &str) -> Result<(), Error> {
     let client_id = String::from("http://localhost");
     let (code_challenge, code_verify) = PkceCodeChallenge::new_random_sha256();
     let client = Client::new();
+    let scope = "atproto transtition:generic";
     let state: String = rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(30)
@@ -228,7 +229,7 @@ fn authenticate(auth_url: &str) -> Result<(), Error> {
         "code_challenge": code_challenge.as_str(),
         "redirect_uri": redirect_uri,
         "code_challenge_method": code_challenge.method(),
-        "scope": "atproto",
+        "scope": scope,
         "response_type": "code",
         "application_type": "native",
         "dpop_bound_access_tokens": true,
@@ -252,7 +253,7 @@ fn authenticate(auth_url: &str) -> Result<(), Error> {
         .query_pairs_mut()
         .append_pair("client_id", &client_id)
         .append_pair("redirect_uri", &redirect_uri)
-        .append_pair("scope", &"atproto")
+        .append_pair("scope", scope)
         .append_pair("request_uri", &request_uri);
     println!("{:?}", auth_endpoint.as_str());
     open::that(auth_endpoint.as_str()).unwrap();
