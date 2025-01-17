@@ -9,9 +9,6 @@ LABEL fly_launch_runtime="SvelteKit"
 # SvelteKit app lives here
 WORKDIR /app
 
-# Set production environment
-ENV NODE_ENV="production"
-
 # Install pnpm
 ARG PNPM_VERSION=9.15.1
 RUN npm install -g pnpm@$PNPM_VERSION
@@ -28,9 +25,17 @@ RUN apt-get update -qq && \
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
+# Set production environment
+# ENV NODE_ENV="production"
+
 # Copy application code
 COPY . .
 
+# Build application
+RUN pnpm run build:w
+
+# Remove development dependencies
+RUN pnpm prune --prod
 
 # Final stage for app image
 FROM base
