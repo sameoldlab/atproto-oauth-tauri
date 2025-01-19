@@ -29,6 +29,7 @@
     try {
       message = await invoke("authenticate", {
         authUrl: auth_server,
+        handle: name,
       });
     } catch (err) {
       console.error(err);

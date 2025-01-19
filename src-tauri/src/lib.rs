@@ -43,7 +43,7 @@ pub fn run() {
 }
 
 #[command]
-fn authenticate(auth_url: &str) -> Result<(), Error> {
+fn authenticate(auth_url: &str, handle: Option<&str>) -> Result<(), MyError> {
     let port = tauri_plugin_oauth::start_with_config(
         OauthConfig {
             ports: None,
@@ -81,6 +81,7 @@ fn authenticate(auth_url: &str) -> Result<(), Error> {
         "application_type": "native",
         "dpop_bound_access_tokens": true,
         "grant_types": ["authorization_code", "refresh_token"],
+        "login_hint": handle
     });
     println!("{:#?}", request_body);
 
