@@ -1,19 +1,18 @@
 mod atproto_oauth;
 mod errors;
 
-use atproto_oauth::{get_servers, resolve_did, valid_did, ParResponse};
+use atproto_oauth::{get_oauth_auth_server, get_servers, resolve_did, ParResponse};
 use errors::MyError;
-use oauth2::{PkceCodeChallenge, RedirectUrl};
+use oauth2::PkceCodeChallenge;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use reqwest::{
-    blocking::{get, Client},
+    blocking::Client,
     Url,
 };
-use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
-    collections::{BTreeMap, HashMap},
+    collections::HashMap,
 };
 use tauri::{command, Manager};
 use tauri_plugin_deep_link::DeepLinkExt;
@@ -140,6 +139,7 @@ fn authenticate(auth_url: &str, handle: Option<&str>) -> Result<(), MyError> {
     let client_id = String::from("http://localhost");
     let (code_challenge, code_verify) = PkceCodeChallenge::new_random_sha256();
     let client = Client::new();
+    let endpoints = get_oauth_auth_server(&auth_url_str.as_str())?;
     let scope = "atproto"; //transtition:generic";
 
     let redirect_uri = format!("http://127.0.0.1:{port}");
@@ -157,7 +157,9 @@ fn authenticate(auth_url: &str, handle: Option<&str>) -> Result<(), MyError> {
         "login_hint": handle
     });
 
-    let par_endpoint = auth_server.join("/oauth/par").unwrap();
+    let par_endpoint = auth_server
+        .join(&endpoints.pushed_authorization_request_endpoint)
+        .unwrap();
     let par_response = client
         .post(par_endpoint)
         .json(&request_body)
@@ -168,7 +170,7 @@ fn authenticate(auth_url: &str, handle: Option<&str>) -> Result<(), MyError> {
 
     match par_response {
         ParResponse::Success(data) => {
-            let mut auth_endpoint = auth_server.join("oauth/authorize").unwrap();
+            let mut auth_endpoint = auth_server.join(&endpoints.authorization_endpoint).unwrap();
             auth_endpoint
                 .query_pairs_mut()
                 .append_pair("client_id", &client_id)
