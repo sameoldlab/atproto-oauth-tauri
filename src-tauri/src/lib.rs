@@ -68,6 +68,7 @@ fn authenticate(auth_url: &str, handle: Option<&str>) -> Result<(), MyError> {
         .collect();
     let auth_server = Url::parse(auth_url).unwrap();
     let auth_url2 = auth_url.to_string();
+    let auth_url_str = auth_url.to_string();
     let state2 = state.to_string();
     let (sender, recv) = std::sync::mpsc::channel::<Result<String, MyError>>();
     let port = tauri_plugin_oauth::start_with_config(
