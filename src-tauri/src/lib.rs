@@ -15,13 +15,24 @@ use std::{
     borrow::Cow,
     collections::{BTreeMap, HashMap},
 };
-use tauri::command;
+use tauri::{command, Manager};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_oauth::OauthConfig;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+          println!("a new app instance was opened with {args:?} and the deep link event was already triggered");
+          let _ = app.get_webview_window("main")
+           .expect("no main window")
+           .set_focus();
+        }));
+    }
+    builder
         .plugin(tauri_plugin_deep_link::init())
         // .plugin(tauri_plugin_sql::Builder::new().build())
         // .plugin(tauri_plugin_notification::init())
@@ -29,8 +40,14 @@ pub fn run() {
         // .plugin(tauri_plugin_fs::init())
         // .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            #[cfg(desktop)]
-            app.deep_link().register("tirekick")?;
+            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                app.deep_link().register_all()?;
+            }
+            app.deep_link().on_open_url(|event| {
+                println!("deep link URLs: {:?}", event.urls());
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
