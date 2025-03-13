@@ -1,8 +1,12 @@
 use crate::atproto_oauth::ParResponseError;
+use serde_path_to_error::Error as SerdePathError;
+use std::fmt;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MyError {
-    #[error(transparent)]
+    #[error("Serialization error: {0}")]
+    Serialization(#[from] SerializationError),
+    #[error("Reqwest error: {0}, {__display0}")]
     ReqwestError(#[from] reqwest::Error),
     #[error("Parse error: {0}")]
     ParseError(#[from] oauth2::url::ParseError),
@@ -51,4 +55,26 @@ impl From<ParResponseError> for MyError {
     }
 }
 
+#[derive(Debug)]
+pub struct SerializationError {
+    path: String,
+    cause: String,
+}
 
+
+impl fmt::Display for SerializationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "at path '{}': {}", self.path, self.cause)
+    }
+}
+
+impl std::error::Error for SerializationError {}
+
+impl From<SerdePathError<reqwest::Error>> for SerializationError {
+    fn from(err: SerdePathError<reqwest::Error>) -> Self {
+        let path = err.path().to_string();
+        let cause = err.inner().to_string();
+
+        SerializationError { path, cause }
+    }
+}
