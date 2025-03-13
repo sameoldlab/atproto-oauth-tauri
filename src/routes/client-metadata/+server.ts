@@ -18,8 +18,8 @@ export function GET() {
       "supply.same.tirekick:/callback/atproto",
       `${client_uri}/callback/atproto`
     ],
-    // token_endpoint_auth_method? private_key_jwt,
-    // token_endpoint_auth_signing_alg? 'ES256',
+    token_endpoint_auth_method: "none",
+    // token_endpoint_auth_signing_alg: 'ES256',
     dpop_bound_access_tokens: true,
     // (jwks: Jwks[] ) || (jwks_uri: url string)
     client_name: "Tire Kick",
