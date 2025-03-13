@@ -4,7 +4,7 @@ export function GET() {
   const client_uri = "https://tirekick.same.supply";
 
   return json({
-    client_id: `${client_uri}/client-metadata.json`,
+    client_id: `${client_uri}/client-metadata`,
     application_type: "native",
     grant_types: [
       "authorization_code",
