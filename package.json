@@ -6,10 +6,10 @@
   "scripts": {
     "start": "node build",
     "dev": "tauri dev",
-    "dev:n": "vite dev --mode native",
     "dev:w": "vite dev --mode web",
+    "dev:n": "vite dev --mode native",
     "build:w": "vite build --mode web",
-    "build:n": "vite tauri build --mode native",
+    "build:n": "vite build --mode native",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
