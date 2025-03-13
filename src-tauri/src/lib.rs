@@ -136,13 +136,15 @@ fn authenticate(auth_url: &str, handle: Option<&str>) -> Result<(), MyError> {
     )
     .unwrap();
 
-    let client_id = String::from("http://localhost");
+    // let client_id = String::from("http://localhost");
+    let client_id = "https://tirekick.same.supply/client-metadata";
     let (code_challenge, code_verify) = PkceCodeChallenge::new_random_sha256();
     let client = Client::new();
     let endpoints = get_oauth_auth_server(&auth_url_str.as_str())?;
     let scope = "atproto"; //transtition:generic";
 
-    let redirect_uri = format!("http://127.0.0.1:{port}");
+    // let redirect_uri = format!("http://127.0.0.1:{port}");
+    let redirect_uri = "supply.same.tirekick:/callback/atproto";
     let request_body = serde_json::json!({
         "client_id": format!("{client_id}"),
         "state": &state,
