@@ -6,7 +6,11 @@ import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 const config = {
   preprocess: vitePreprocess(),
   kit: {
-    adapter: process.env.MODE === 'native' ? adStatic() : adNode(),
+    adapter: process.env.MODE === 'native'
+      ? adStatic({
+        strict: false
+      })
+      : adNode(),
   },
 };
 

@@ -1,4 +1,5 @@
 import { json } from "@sveltejs/kit";
+export const prerender = import.meta.env.MODE === 'native';
 
 export function GET() {
   const client_uri = "https://tirekick.same.supply";
