@@ -85,25 +85,31 @@ jobs:
         run: echo "APP_VERSION=$(jq -r .version src-tauri/tauri.conf.json)" >> $GITHUB_ENV
 
       - name: Upload deb bundle
+        if: matrix.platform == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: Debian Bundle
           path: ${{ github.workspace }}/src-tauri/target/release/bundle/deb/appname_${{ env.APP_VERSION }}_amd64.deb
 
       - name: Upload rpm bundle
+        if: matrix.platform == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: RPM Bundle
           path: ${{ github.workspace }}/src-tauri/target/release/bundle/rpm/appname-${{ env.APP_VERSION }}-1.x86_64.rpm
 
       - name: Upload appimage bundle
+        if: matrix.platform == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: AppImage Bundle
           path: ${{ github.workspace }}/src-tauri/target/release/bundle/appimage/Roomy\ Chat_${{ env.APP_VERSION }}_amd64.AppImage
+
       - name: upload apks
         uses: actions/upload-artifact@v4
-        if: ${{ matrix.android }}
+        if: matrix.platform == 'ubuntu-latest'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: Android APKs
           path: ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/**/**/*.apk
@@ -116,6 +122,6 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: false
+          releaseDraft: true
           prerelease: true
           args: ${{ matrix.args }}
