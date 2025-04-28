@@ -89,7 +89,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: ${{ matrix.android }}
         with:
-          draft: true
+          draft: false
           files: |
             ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/universal/release/roomy-chat_*.apk
           append_body: true
@@ -104,6 +104,6 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
-          prerelease: true
+          releaseDraft: false
+          prerelease: false
           args: ${{ matrix.args }}
