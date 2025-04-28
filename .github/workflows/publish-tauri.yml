@@ -76,7 +76,7 @@ jobs:
         run: |
          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
           cargo install tauri-cli --version "^2.0.0" --locked
-          cargo android init
+          cargo tauri android init
           cargo tauri android build --split-per-abi --apk
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
