@@ -3,8 +3,10 @@ name: 'Build and release tauri'
 on:
   workflow_dispatch:
   push:
-    tags:
-      - 'v*' # Should match `version` in ./src-tauri/tauri.conf.json
+    branches:
+      - main
+    # tags:
+      # - 'v*' # Should match `version` in ./src-tauri/tauri.conf.json
 
 jobs:
   publish-tauri:
@@ -19,6 +21,8 @@ jobs:
           - platform: 'macos-latest' # for Intel based macs.
             args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-22.04'
+            default: false
+            android: yes
           - platform: 'windows-latest'
 
     runs-on: ${{ matrix.platform }}
@@ -45,7 +49,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
@@ -54,6 +57,37 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install
 
+      - name: Setup java
+        uses: actions/setup-java@v3
+        if: ${{ matrix.android }}
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup NDK 
+        uses: nttld/setup-ndk@v1
+        if: ${{ matrix.android }}
+        id: setup-ndk
+        with:
+          ndk-version: r25b
+          local-cache: true
+
+      - name: Build Android
+        if: ${{ matrix.android }}
+        commands: |
+         rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+          cargo install tauri-cli --version "^2.0.0" --locked
+          cargo android init
+          cargo tauri android build --split-per-abi --apk
+        env:
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.android }}
+        with:
+          name: Android APKs
+          path: ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/**/**/*.apk
+            
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
