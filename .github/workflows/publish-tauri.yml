@@ -16,10 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
-            args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest' # for Intel based macs.
-            args: '--target x86_64-apple-darwin'
+          - platform: 'macos-latest'
+            args: ['--target aarch64-apple-darwin', '--target x86_64-apple-darwin']
           - platform: 'ubuntu-latest'
             android: yes
           - platform: 'windows-latest'
@@ -32,7 +30,7 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -72,14 +70,35 @@ jobs:
           local-cache: true
 
       - name: Build Android
-        if: ${{ matrix.android }}
+        if: matrix.platform == 'ubuntu-latest'
         run: |
          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
           cargo install tauri-cli --version "^2.0.0" --locked
           cargo tauri android build --split-per-abi --apk
+          cargo tauri build
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
+      - name: Get app version
+        run: echo "APP_VERSION=$(jq -r .version src-tauri/tauri.conf.json)" >> $GITHUB_ENV
+
+      - name: Upload deb bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Debian Bundle
+          path: ${{ github.workspace }}/src-tauri/target/release/bundle/deb/appname_${{ env.APP_VERSION }}_amd64.deb
+
+      - name: Upload rpm bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: RPM Bundle
+          path: ${{ github.workspace }}/src-tauri/target/release/bundle/rpm/appname-${{ env.APP_VERSION }}-1.x86_64.rpm
+
+      - name: Upload appimage bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppImage Bundle
+          path: ${{ github.workspace }}/src-tauri/target/release/bundle/appimage/Roomy\ Chat_${{ env.APP_VERSION }}_amd64.AppImage
       - name: upload apks
         uses: actions/upload-artifact@v4
         if: ${{ matrix.android }}
