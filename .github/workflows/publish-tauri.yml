@@ -109,6 +109,7 @@ jobs:
           path: ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/**/**/*.apk
             
       - uses: tauri-apps/tauri-action@v0
+        if: matrix.platform != 'ubuntu-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
