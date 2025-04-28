@@ -82,7 +82,8 @@ jobs:
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
-      - uses: actions/upload-artifact@v3
+      - name: upload apks
+        uses: actions/upload-artifact@v3
         if: ${{ matrix.android }}
         with:
           name: Android APKs
