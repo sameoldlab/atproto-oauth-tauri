@@ -73,17 +73,19 @@ jobs:
           ndk-version: r25b
           local-cache: true
 
+      - name: Get app version
+        if: ${{ matrix.android }}
+        run: echo "APP_VERSION=$(jq -r .version src-tauri/tauri.conf.json)" >> $GITHUB_ENV
+
       - name: Build Android
         if: ${{ matrix.android }}
         run: |
          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
           cargo install tauri-cli --version "^2.0.0" --locked
           cargo tauri android build --apk
+          cp ./src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk ./src-tauri/gen/android/app/build/outputs/apk/universal/release/roomy-chat_${{ env.APP_VERSION}}.apk
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-
-      - name: Get app version
-        run: echo "APP_VERSION=$(jq -r .version src-tauri/tauri.conf.json)" >> $GITHUB_ENV
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -91,20 +93,11 @@ jobs:
         with:
           draft: true
           files: |
-            ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
+            ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/universal/release/roomy-chat_*.apk
           append_body: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ env.APP_VERSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: upload apks
-      #   uses: actions/upload-artifact@v4
-      #   if: ${{ matrix.android }}
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     name: Android apk
-      #     path: ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/**/**/*.apk
-            
       - uses: tauri-apps/tauri-action@v0
         if: ${{ !matrix.android }}
         env:
