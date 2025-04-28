@@ -74,7 +74,7 @@ jobs:
 
       - name: Build Android
         if: ${{ matrix.android }}
-        commands: |
+        run: |
          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
           cargo install tauri-cli --version "^2.0.0" --locked
           cargo android init
