@@ -3,10 +3,8 @@ name: 'Build and release tauri'
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-    # tags:
-      # - 'v*' # Should match `version` in ./src-tauri/tauri.conf.json
+    tags:
+      - 'v*' # Should match `version` in ./src-tauri/tauri.conf.json
 
 jobs:
   publish-tauri:
