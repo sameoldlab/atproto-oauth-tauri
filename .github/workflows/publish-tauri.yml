@@ -22,6 +22,7 @@ jobs:
             args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-latest'
             android: yes
+          - platform: 'ubuntu-latest'
           - platform: 'windows-latest'
 
     runs-on: ${{ matrix.platform }}
@@ -48,6 +49,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
@@ -76,46 +78,35 @@ jobs:
         run: |
          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
           cargo install tauri-cli --version "^2.0.0" --locked
-          cargo tauri android build --split-per-abi --apk
-          cargo tauri build
+          cargo tauri android build --apk
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
       - name: Get app version
         run: echo "APP_VERSION=$(jq -r .version src-tauri/tauri.conf.json)" >> $GITHUB_ENV
 
-      - name: Upload deb bundle
-        if: matrix.platform == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: ${{ matrix.android }}
         with:
-          name: Debian Bundle
-          path: ${{ github.workspace }}/src-tauri/target/release/bundle/deb/appname_${{ env.APP_VERSION }}_amd64.deb
-
-      - name: Upload rpm bundle
-        if: matrix.platform == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: RPM Bundle
-          path: ${{ github.workspace }}/src-tauri/target/release/bundle/rpm/appname-${{ env.APP_VERSION }}-1.x86_64.rpm
-
-      - name: Upload appimage bundle
-        if: matrix.platform == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: AppImage Bundle
-          path: ${{ github.workspace }}/src-tauri/target/release/bundle/appimage/Roomy\ Chat_${{ env.APP_VERSION }}_amd64.AppImage
-
-      - name: upload apks
-        uses: actions/upload-artifact@v4
-        if: matrix.platform == 'ubuntu-latest'
+          draft: true
+          files: |
+            ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
+          append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          name: Android APKs
-          path: ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/**/**/*.apk
+
+      # - name: upload apks
+      #   uses: actions/upload-artifact@v4
+      #   if: ${{ matrix.android }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     name: Android apk
+      #     path: ${{ github.workspace }}/src-tauri/gen/android/app/build/outputs/apk/**/**/*.apk
             
       - uses: tauri-apps/tauri-action@v0
-        if: matrix.platform != 'ubuntu-latest'
+        if: ${{ !matrix.android }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
