@@ -32,7 +32,7 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -76,7 +76,6 @@ jobs:
         run: |
          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
           cargo install tauri-cli --version "^2.0.0" --locked
-          cargo tauri android init
           cargo tauri android build --split-per-abi --apk
         env:
           NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
