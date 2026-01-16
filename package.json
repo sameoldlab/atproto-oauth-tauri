@@ -27,14 +27,14 @@
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.7.10",
-    "@sveltejs/adapter-node": "^5.2.12",
-    "@sveltejs/adapter-static": "^3.0.8",
-    "@sveltejs/kit": "^2.20.7",
-    "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tauri-apps/cli": "^2.5.0",
-    "svelte": "^5.28.2",
-    "svelte-check": "^4.1.6",
+    "@sveltejs/adapter-node": "^5.5.1",
+    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/kit": "^2.49.5",
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "svelte": "^5.46.4",
+    "svelte-check": "^4.3.5",
     "typescript": "~5.6.3",
-    "vite": "^6.3.3"
+    "vite": "^6.4.1"
   }
 }
